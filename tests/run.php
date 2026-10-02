@@ -1,7 +1,7 @@
 <?php
 /**
  * Minimal test runner. Run with:
- *   wp --path=/Users/derekhanson/Studio/derekhansonblog eval-file wp-content/plugins/tufte-formats/tests/run.php
+ *   wp --path=<site> eval-file wp-content/plugins/tufte-formats/tests/run.php
  * Prints one PASS/FAIL line per case and exits non-zero on any failure.
  *
  * Note: WP-CLI eval()s this file inside a method, so it cannot declare

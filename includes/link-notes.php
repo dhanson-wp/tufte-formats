@@ -48,13 +48,13 @@ function tufte_formats_link_note_content( string $content, string $home_host ): 
 		return $content;
 	}
 
-	$sr     = '<span class="tufte-visually-hidden"> (external link)</span>';
+	$sr     = '<span class="screen-reader-text tufte-visually-hidden"> (external link)</span>';
 	$quoted = preg_quote( $url, '/' );
 
-	// The title link: keep its text, add the class and the screen reader text.
-	$content = (string) preg_replace(
+	// The title link: keep its text, add the class and the screen reader text. A callback, so a "$1" or "\1" in a URL is not read as a backreference.
+	$content = (string) preg_replace_callback(
 		'/<a\s[^>]*href=(["\'])' . $quoted . '\1[^>]*>(.*?)<\/a>/is',
-		'<a class="tufte-external" href="' . $url . '">$2' . $sr . '</a>',
+		static fn( array $m ): string => '<a class="tufte-external" href="' . $url . '">' . $m[2] . $sr . '</a>',
 		$content,
 		1
 	);
@@ -83,7 +83,8 @@ function tufte_formats_link_note_content( string $content, string $home_host ): 
  * @return string
  */
 function tufte_formats_link_note_filter( string $content ): string {
-	if ( 'link' !== get_post_format() ) {
+	// Feeds and the REST API have no stylesheet to hide the screen reader text, and the markup is not for them.
+	if ( is_feed() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) || 'link' !== get_post_format() ) {
 		return $content;
 	}
 

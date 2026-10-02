@@ -68,7 +68,7 @@ function tufte_formats_detect_format( string $content ): string {
  * @return void
  */
 function tufte_formats_format_on_create( int $post_id, WP_Post $post, bool $update ): void {
-	if ( $update || 'post' !== $post->post_type || wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) || has_post_format( 'status', $post ) || get_post_format( $post_id ) ) {
+	if ( $update || 'post' !== $post->post_type || wp_is_post_revision( $post_id ) || wp_is_post_autosave( $post_id ) || get_post_format( $post_id ) ) {
 		return;
 	}
 
