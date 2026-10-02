@@ -77,17 +77,29 @@ function tufte_formats_link_note_content( string $content, string $home_host ): 
 }
 
 /**
- * The_content filter: only for link-format posts.
+ * Mark a link note's link when the post content block renders it for a page.
  *
- * @param string $content Content.
+ * The screen reader text is added here, on the finished block output, and never in
+ * the_content. That keeps it out of everything that reads the content for another
+ * audience: ActivityPub objects, excerpts, the REST API, feeds, and newsletter or email
+ * renders. Only the post content block of a link-format post on a front-end HTML page
+ * gets it.
+ *
+ * @param string         $html     Rendered block HTML.
+ * @param array          $block    Parsed block.
+ * @param WP_Block|null  $instance Block instance, which carries the post context.
  * @return string
  */
-function tufte_formats_link_note_filter( string $content ): string {
-	// Feeds and the REST API have no stylesheet to hide the screen reader text, and the markup is not for them.
-	if ( is_feed() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) || 'link' !== get_post_format() ) {
-		return $content;
+function tufte_formats_link_note_render_block( string $html, array $block, $instance = null ): string {
+	if ( 'core/post-content' !== ( $block['blockName'] ?? '' ) || is_feed() || is_admin() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+		return $html;
 	}
 
-	return tufte_formats_link_note_content( $content, (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
+	$post_id = $instance instanceof WP_Block ? (int) ( $instance->context['postId'] ?? 0 ) : 0;
+	if ( $post_id < 1 || 'link' !== get_post_format( $post_id ) ) {
+		return $html;
+	}
+
+	return tufte_formats_link_note_content( $html, (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
 }
-add_filter( 'the_content', 'tufte_formats_link_note_filter', 20 );
+add_filter( 'render_block', 'tufte_formats_link_note_render_block', 10, 3 );

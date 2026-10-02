@@ -36,21 +36,43 @@ tufte_formats_assert_same( true, str_contains( tufte_formats_link_note_content( 
 // Relative and mailto links are not external.
 tufte_formats_assert_same( '', tufte_formats_link_note_url( '<a href="/about/">x</a> <a href="mailto:a@b.co">m</a>', $tf_host ), 'link note: relative and mailto links are not the note link' );
 
-// The filter only runs for link-format notes.
+// The screen reader text is added at render time only, on the post content block of a link note.
 $tf_id = wp_insert_post( array( 'post_title' => 'tf link', 'post_status' => 'publish', 'post_content' => $tf_in ) );
 set_post_format( $tf_id, 'link' );
+$tf_render = static function ( int $id ): string {
+	$block = new WP_Block( array( 'blockName' => 'core/post-content', 'attrs' => array(), 'innerBlocks' => array(), 'innerHTML' => '', 'innerContent' => array() ), array( 'postId' => $id, 'postType' => 'post' ) );
+	$GLOBALS['post'] = get_post( $id );
+	setup_postdata( $GLOBALS['post'] );
+	$out = $block->render();
+	wp_reset_postdata();
+	return $out;
+};
+tufte_formats_assert_same( true, str_contains( $tf_render( $tf_id ), 'tufte-external' ) && str_contains( $tf_render( $tf_id ), '(external link)' ), 'link note render: the post content block of a link note gets the marked link and screen reader text' );
+
+// Nothing in the content filters, the stored content, the excerpt, or REST carries it.
+tufte_formats_assert_same( false, str_contains( apply_filters( 'the_content', get_post_field( 'post_content', $tf_id ) ), '(external link)' ), 'link note leak: the_content has no screen reader text' );
+tufte_formats_assert_same( $tf_in, get_post_field( 'post_content', $tf_id ), 'link note leak: the stored content is untouched' );
 $GLOBALS['post'] = get_post( $tf_id );
-setup_postdata( $GLOBALS['post'] );
-tufte_formats_assert_same( true, str_contains( tufte_formats_link_note_filter( $tf_in ), 'tufte-external' ), 'link note filter: runs on a link-format post' );
+tufte_formats_assert_same( false, str_contains( get_the_excerpt( $tf_id ), '(external link)' ), 'link note leak: the excerpt has no screen reader text' );
+$tf_rest = rest_do_request( new WP_REST_Request( 'GET', '/wp/v2/posts/' . $tf_id ) )->get_data();
+tufte_formats_assert_same( false, str_contains( wp_json_encode( $tf_rest ), '(external link)' ) || str_contains( wp_json_encode( $tf_rest ), 'screen-reader-text' ), 'link note leak: the REST response has none' );
+if ( class_exists( '\Activitypub\Transformer\Factory' ) ) {
+	$tf_ap = wp_json_encode( \Activitypub\Transformer\Factory::get_transformer( get_post( $tf_id ) )->to_object()->to_array() );
+	tufte_formats_assert_same( false, str_contains( $tf_ap, '(external link)' ) || str_contains( $tf_ap, 'screen-reader-text' ), 'link note leak: the ActivityPub object has none' );
+} else {
+	echo "SKIP  link note leak: ActivityPub is not loaded\n";
+}
+
+// A feed render, a note of another format, and other blocks are left alone.
+$tf_wp_query_feed = $GLOBALS['wp_query']->is_feed;
+$GLOBALS['wp_query']->is_feed = true;
+tufte_formats_assert_same( false, str_contains( $tf_render( $tf_id ), '(external link)' ), 'link note render: skipped in a feed' );
+$GLOBALS['wp_query']->is_feed = $tf_wp_query_feed;
 set_post_format( $tf_id, 'status' );
-tufte_formats_assert_same( $tf_in, tufte_formats_link_note_filter( $tf_in ), 'link note filter: leaves other formats alone' );
+tufte_formats_assert_same( false, str_contains( $tf_render( $tf_id ), '(external link)' ), 'link note render: other formats are left alone' );
+tufte_formats_assert_same( '<p>x</p>', tufte_formats_link_note_render_block( '<p>x</p>', array( 'blockName' => 'core/paragraph' ), null ), 'link note render: other blocks are left alone' );
 wp_delete_post( $tf_id, true );
-wp_reset_postdata();
 
 // A URL with backreference-looking text stays intact.
 $tf_odd = '<p><a href="https://example.org/a$1b\\1c">T</a></p>';
 tufte_formats_assert_same( true, str_contains( tufte_formats_link_note_content( $tf_odd, $tf_host ), 'href="https://example.org/a$1b\\1c">T' ), 'link note: "$1" and a backslash in a URL are not backreferences' );
-
-// Feeds and REST get the content untouched (REST_REQUEST is a constant, so this is checked in the source).
-$tf_src = (string) file_get_contents( dirname( __DIR__ ) . '/includes/link-notes.php' );
-tufte_formats_assert_same( true, str_contains( $tf_src, "is_feed() || ( defined( 'REST_REQUEST' ) && REST_REQUEST )" ), 'link note filter: skipped in feeds and REST responses' );
