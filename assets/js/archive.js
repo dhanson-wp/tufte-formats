@@ -53,7 +53,7 @@ const eligibleLink = ( event, region, seen ) => {
 /**
  * The permalink of the note a click landed on, when the click should open it.
  *
- * A note is clickable anywhere except on its own links, buttons, and media, and
+ * A note is clickable anywhere except on its own links, buttons, form controls, and players (video, audio, and embeds), and
  * never while text is selected, so reading and copying still work.
  *
  * @param {Event} event Click event.
