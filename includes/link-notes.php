@@ -1,0 +1,92 @@
+<?php
+/**
+ * Link-format notes: the first external link in the content is the note's
+ * link. It is marked as external, and the source name beside it links to
+ * the same address. Notes without a link stay plain text.
+ *
+ * @package Tufte_Formats
+ */
+
+declare(strict_types=1);
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * The first external http(s) link in some HTML.
+ *
+ * @param string $html      Content.
+ * @param string $home_host This site's host, so its own links are not external.
+ * @return string URL, or an empty string.
+ */
+function tufte_formats_link_note_url( string $html, string $home_host ): string {
+	if ( ! preg_match_all( '/<a\s[^>]*href=(["\'])(https?:\/\/[^"\']+)\1/i', $html, $matches ) ) {
+		return '';
+	}
+
+	foreach ( $matches[2] as $url ) {
+		$host = (string) wp_parse_url( html_entity_decode( $url ), PHP_URL_HOST );
+		if ( '' !== $host && 0 !== strcasecmp( $host, $home_host ) ) {
+			return $url;
+		}
+	}
+
+	return '';
+}
+
+/**
+ * Mark a link note's link and source name as external.
+ *
+ * @param string $content   Note content.
+ * @param string $home_host This site's host.
+ * @return string
+ */
+function tufte_formats_link_note_content( string $content, string $home_host ): string {
+	$url = tufte_formats_link_note_url( $content, $home_host );
+	if ( '' === $url || str_contains( $content, 'class="tufte-external"' ) ) {
+		return $content;
+	}
+
+	$sr     = '<span class="tufte-visually-hidden"> (external link)</span>';
+	$quoted = preg_quote( $url, '/' );
+
+	// The title link: keep its text, add the class and the screen reader text.
+	$content = (string) preg_replace(
+		'/<a\s[^>]*href=(["\'])' . $quoted . '\1[^>]*>(.*?)<\/a>/is',
+		'<a class="tufte-external" href="' . $url . '">$2' . $sr . '</a>',
+		$content,
+		1
+	);
+
+	// The source name: link an author-written one, or add one from the host.
+	if ( preg_match( '/<span class="ref-src">(.*?)<\/span>/is', $content, $src ) ) {
+		$content = str_replace(
+			$src[0],
+			'<span class="ref-src"><a class="tufte-external" href="' . $url . '">' . $src[1] . $sr . '</a></span>',
+			$content
+		);
+	} else {
+		$host   = (string) preg_replace( '/^www\./i', '', (string) wp_parse_url( html_entity_decode( $url ), PHP_URL_HOST ) );
+		$source = ' <span class="ref-src"><a class="tufte-external" href="' . $url . '">' . esc_html( $host ) . $sr . '</a></span>';
+		$pos    = strpos( $content, '</p>' );
+		$content = false === $pos ? $content . $source : substr_replace( $content, $source, $pos, 0 );
+	}
+
+	return $content;
+}
+
+/**
+ * The_content filter: only for link-format posts.
+ *
+ * @param string $content Content.
+ * @return string
+ */
+function tufte_formats_link_note_filter( string $content ): string {
+	if ( 'link' !== get_post_format() ) {
+		return $content;
+	}
+
+	return tufte_formats_link_note_content( $content, (string) wp_parse_url( home_url(), PHP_URL_HOST ) );
+}
+add_filter( 'the_content', 'tufte_formats_link_note_filter', 20 );
