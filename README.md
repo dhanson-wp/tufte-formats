@@ -2,7 +2,7 @@
 
 Post formats as notes for [Tufte Blocks](https://github.com/dhanson-wp/tufte-blocks) sites.
 
-I wanted short posts (a thought, a photo, a link, a quote) to live next to my essays without crowding them. This plugin turns any post that isn't a Standard post into a note, keeps notes out of the blog loop, search, and the main feed, and gives them their own archive views.
+I wanted short posts (a thought, a photo, a link, a quote) to live next to my essays without crowding them. This plugin turns any post that isn't a Standard post into a note, keeps notes out of the blog loop and the main feed, shows them in search, and gives them their own archive views.
 
 It's a companion for the theme and it knows nothing about my site. Site-specific work (migrations, redirects) lives in the site repo.
 
@@ -10,6 +10,7 @@ It's a companion for the theme and it knows nothing about my site. Site-specific
 
 - **Notes model.** Any non-standard post format is a note (aside, gallery, link, image, quote, status, video, audio). Essays stay Standard.
 - **Archive views.** `/archive/`, `/archive/essays/`, and `/archive/notes/` filter one stream, with a template hierarchy hook for the page templates.
+- **Search.** Notes appear in search results. `?s=term&format=<value>` narrows them with plain links that work without JavaScript: `essays` (standard posts), `notes` (every non-standard format), or one format such as `link`. Anything else falls back to all. `tufte_formats_search_filter_items()` returns the filter row's data (All, Essays, Notes, and each format with matches) for a theme to render. While a format is chosen, Jetpack Search is told to stand aside, because it ignores the Essays filter's NOT IN clause.
 - **Note meta.** A reply count in the note's margin ("N replies", or "Reply" with none), fediverse handles and webmention sources under comments, and thread depth for notes.
 - **Link notes.** The first external link in a link-format note is marked as external, with a source name that links to the same address.
 - **Creating notes.** Untitled posts made through the REST API or code get a format from their first block, and Posts > New note starts a status note. A titled post stays an essay.

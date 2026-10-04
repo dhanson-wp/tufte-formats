@@ -6,9 +6,10 @@
  * webmentions. A post is a note when it has any format except standard
  * (aside, gallery, link, image, quote, status, video, audio, chat). Notes stay
  * out of everything that carries the blog and the newsletter: the blog loop,
- * archives, search, and the main feed. They show up in the Archive views, in a
- * query block whose Post format filter asks for a non-standard format, on the
- * post format archives, and in those archives' own feeds (/type/status/feed/).
+ * archives, and the main feed. They show up in search results (with a format
+ * filter, see search.php), in the Archive views, in a query block whose Post
+ * format filter asks for a non-standard format, on the post format archives,
+ * and in those archives' own feeds (/type/status/feed/).
  *
  * @package Tufte_Formats
  * @since 1.9.0
@@ -101,9 +102,9 @@ function tufte_formats_notes_and( $tax_query, array $clause ): array {
 }
 
 /**
- * Leave notes out of the main blog, archive, search, and feed queries.
+ * Leave notes out of the main blog, archive, and feed queries.
  *
- * Tag archives keep them, so a #hashtag in a note leads to everything with that tag.
+ * Search is not here on purpose: notes appear in search results. Tag archives keep them, so a #hashtag in a note leads to everything with that tag.
  *
  * @param WP_Query $query Query.
  * @return void
@@ -113,7 +114,7 @@ function tufte_formats_notes_exclude_main( WP_Query $query ): void {
 		return;
 	}
 
-	if ( $query->is_home() || $query->is_feed() || $query->is_archive() || $query->is_search() ) {
+	if ( $query->is_home() || $query->is_feed() || $query->is_archive() ) {
 		$query->set( 'tax_query', tufte_formats_notes_and( $query->get( 'tax_query' ), tufte_formats_notes_clause( 'NOT IN' ) ) );
 	}
 }

@@ -21,6 +21,7 @@ define( 'TUFTE_FORMATS_PLUGIN_FILE', __FILE__ );
 
 require_once __DIR__ . '/includes/parent-compat.php';
 require_once __DIR__ . '/includes/notes.php';
+require_once __DIR__ . '/includes/search.php';
 require_once __DIR__ . '/includes/note-meta.php';
 require_once __DIR__ . '/includes/archive-interactivity.php';
 require_once __DIR__ . '/includes/link-notes.php';
