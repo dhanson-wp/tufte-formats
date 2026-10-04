@@ -39,7 +39,7 @@ The runner prints one PASS or FAIL line per case and exits non-zero on a failure
 
 ## Where this lives
 
-This repo is the plugin's home. My site repo (`dhanson-wp/derekhanson-blog`) carries a copy under `plugins/tufte-formats` for deploys until I wire the two together. Change the plugin here, then copy it over, so the two don't drift.
+This repo is the plugin's home. My site repo (`dhanson-wp/derekhanson-blog`) carries a reference copy under `plugins/tufte-formats` for local testing and a drift check; it doesn't deploy from there. Deploys come from this repo. Change the plugin here, then copy it over, so the two don't drift.
 
 ## Deploying
 
