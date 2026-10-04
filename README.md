@@ -40,6 +40,10 @@ The runner prints one PASS or FAIL line per case and exits non-zero on a failure
 
 This repo is the plugin's home. My site repo (`dhanson-wp/derekhanson-blog`) carries a copy under `plugins/tufte-formats` for deploys until I wire the two together. Change the plugin here, then copy it over, so the two don't drift.
 
+## Deploying
+
+This repo deploys itself through WordPress.com's GitHub deployments in advanced mode. The connection is manual, and its destination is `/wp-content/plugins/tufte-formats`. `.github/workflows/deploy.yml` uploads an artifact named `wpcom` with only `tufte-formats.php`, `assets`, and `includes`, so `tests`, this README, and `.gitignore` are left out on purpose. The site repo's own deploy doesn't ship this folder; two repos must not deploy the same one.
+
 ## License
 
 GPL-2.0-or-later.
