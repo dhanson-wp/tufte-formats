@@ -114,6 +114,8 @@ function tufte_formats_note_archive_taxonomies(): array {
 	/**
 	 * Filters the taxonomies whose archives keep notes.
 	 *
+	 * @since 0.2.0
+	 *
 	 * @param string[] $taxonomies Taxonomy names. Default post_tag and place.
 	 */
 	return array_values( array_filter( (array) apply_filters( 'tufte_formats_note_archive_taxonomies', array( 'post_tag', 'place' ) ), 'is_string' ) );
