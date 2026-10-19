@@ -9,7 +9,8 @@
  * archives, and the main feed. They show up in search results (with a format
  * filter, see search.php), in the Archive views, in a query block whose Post
  * format filter asks for a non-standard format, on the post format archives,
- * and in those archives' own feeds (/type/status/feed/).
+ * on tag and place archives, and in those archives' own feeds
+ * (/type/status/feed/).
  *
  * @package Tufte_Formats
  * @since 1.9.0
@@ -102,15 +103,51 @@ function tufte_formats_notes_and( $tax_query, array $clause ): array {
 }
 
 /**
+ * Taxonomies whose archives list notes alongside essays.
+ *
+ * Defaults to tags and the place taxonomy from Tufte Places. A taxonomy that
+ * isn't registered never matches, so the default is safe without that plugin.
+ *
+ * @return string[]
+ */
+function tufte_formats_note_archive_taxonomies(): array {
+	/**
+	 * Filters the taxonomies whose archives keep notes.
+	 *
+	 * @param string[] $taxonomies Taxonomy names. Default post_tag and place.
+	 */
+	return array_values( array_filter( (array) apply_filters( 'tufte_formats_note_archive_taxonomies', array( 'post_tag', 'place' ) ), 'is_string' ) );
+}
+
+/**
+ * Whether a query is the archive of a taxonomy that keeps notes.
+ *
+ * @param WP_Query $query Query.
+ * @return bool
+ */
+function tufte_formats_is_note_archive( WP_Query $query ): bool {
+	foreach ( tufte_formats_note_archive_taxonomies() as $taxonomy ) {
+		if ( 'post_tag' === $taxonomy ? $query->is_tag() : ( 'category' === $taxonomy ? $query->is_category() : $query->is_tax( $taxonomy ) ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
  * Leave notes out of the main blog, archive, and feed queries.
  *
- * Search is not here on purpose: notes appear in search results. Tag archives keep them, so a #hashtag in a note leads to everything with that tag.
+ * Search is not here on purpose: notes appear in search results. Tag archives
+ * and place archives keep them (see tufte_formats_note_archive_taxonomies()),
+ * so a #hashtag in a note leads to everything with that tag, and a place lists
+ * the photos taken there.
  *
  * @param WP_Query $query Query.
  * @return void
  */
 function tufte_formats_notes_exclude_main( WP_Query $query ): void {
-	if ( is_admin() || ! $query->is_main_query() || $query->is_singular() || $query->is_tax( 'post_format' ) || $query->is_tag() ) {
+	if ( is_admin() || ! $query->is_main_query() || $query->is_singular() || $query->is_tax( 'post_format' ) || tufte_formats_is_note_archive( $query ) ) {
 		return;
 	}
 

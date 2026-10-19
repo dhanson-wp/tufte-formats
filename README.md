@@ -8,7 +8,7 @@ It's a companion for the theme and it knows nothing about my site. Site-specific
 
 ## What it does
 
-- **Notes model.** Any non-standard post format is a note (aside, gallery, link, image, quote, status, video, audio). Essays stay Standard.
+- **Notes model.** Any non-standard post format is a note (aside, gallery, link, image, quote, status, video, audio). Essays stay Standard. Notes stay out of the blog loop, the main feed, and most archives, but tag and place archives list them, so a place from Tufte Places shows the photos taken there. The `tufte_formats_note_archive_taxonomies` filter sets which taxonomies' archives keep notes (default `post_tag` and `place`).
 - **Archive views.** `/archive/`, `/archive/essays/`, and `/archive/notes/` filter one stream, with a template hierarchy hook for the page templates.
 - **Search.** Notes appear in search results. `?s=term&format=<value>` narrows them with plain links that work without JavaScript: `essays` (standard posts), `notes` (every non-standard format), or one format such as `link`. Anything else falls back to all. `tufte_formats_search_filter_items()` returns the filter row's data (All, Essays, Notes, and each format with matches) for a theme to render. While a format is chosen, Jetpack Search is told to stand aside, because it ignores the Essays filter's NOT IN clause.
 - **Note meta.** A reply count in the note's margin ("N replies", or "Reply" with none), fediverse handles and webmention sources under comments, and thread depth for notes.
