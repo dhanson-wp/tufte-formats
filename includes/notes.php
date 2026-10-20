@@ -169,6 +169,15 @@ const TUFTE_FORMATS_ARCHIVE_STREAM_QUERY_ID = 21;
  * @return string
  */
 function tufte_formats_archive_view_for_uri( string $uri ): string {
+	return (string) ( tufte_formats_archive_views()[ $uri ] ?? '' );
+}
+
+/**
+ * Every archive view, by page URI.
+ *
+ * @return array<string,string> Page URI without slashes => view slug.
+ */
+function tufte_formats_archive_views(): array {
 	$views = array(
 		'archive'        => 'all',
 		'archive/essays' => 'essays',
@@ -180,9 +189,16 @@ function tufte_formats_archive_view_for_uri( string $uri ): string {
 	 *
 	 * @param array<string,string> $views Page URI without slashes => view slug.
 	 */
-	$views = (array) apply_filters( 'tufte_formats_archive_views', $views );
+	return (array) apply_filters( 'tufte_formats_archive_views', $views );
+}
 
-	return (string) ( $views[ $uri ] ?? '' );
+/**
+ * The archive views' paths, as the router checks links against them.
+ *
+ * @return string[] Paths with leading and trailing slashes, such as /archive/notes/.
+ */
+function tufte_formats_archive_paths(): array {
+	return array_map( static fn( $uri ) => '/' . trim( (string) $uri, '/' ) . '/', array_keys( tufte_formats_archive_views() ) );
 }
 
 /**

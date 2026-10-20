@@ -7,17 +7,18 @@
  */
 import { store, getElement, withSyncEvent } from '@wordpress/interactivity';
 
-// Keep in step with the archive views and TUFTE_FORMATS_ARCHIVE_STREAM_QUERY_ID (21) in includes/notes.php.
-const ARCHIVE_PATH = /^\/archive(\/(essays|notes))?\/(page\/\d+\/)?$/;
+// Keep in step with TUFTE_FORMATS_ARCHIVE_STREAM_QUERY_ID (21) in includes/notes.php.
 const PAGINATION_PARAM = 'query-21-page';
 const prefetched = new Set();
 let navId = 0;
 
-const MESSAGES = {
-	all: 'Showing all posts',
-	essays: 'Showing essays',
-	notes: 'Showing notes',
-};
+/**
+ * Whether a path is one of the archive views (state.paths, from the server), or a page of one.
+ *
+ * @param {string} pathname Link path.
+ * @return {boolean} Archive view path.
+ */
+const isArchivePath = ( pathname ) => ( state.paths || [] ).includes( pathname.replace( /page\/\d+\/$/, '' ) );
 
 /**
  * The eligible archive link for an event, or null.
@@ -39,7 +40,7 @@ const eligibleLink = ( event, region, seen ) => {
 	if ( link.hasAttribute( 'download' ) || link.origin !== window.location.origin ) {
 		return null;
 	}
-	if ( ! ARCHIVE_PATH.test( link.pathname ) ) {
+	if ( ! isArchivePath( link.pathname ) ) {
 		return null;
 	}
 	for ( const key of new URL( link.href ).searchParams.keys() ) {
@@ -91,9 +92,8 @@ const reducedMotion = () => window.matchMedia( '(prefers-reduced-motion: reduce)
 /** Words for screen readers, read from the page that was just swapped in. */
 const describeView = ( region ) => {
 	const current = region.querySelector( '.tufte-filter a[aria-current="page"]' );
-	const path = current ? new URL( current.href ).pathname : '';
-	const view = path.includes( '/notes/' ) ? 'notes' : path.includes( '/essays/' ) ? 'essays' : 'all';
-	let message = MESSAGES[ view ];
+	const label = current ? current.textContent.trim().toLowerCase() : 'all';
+	let message = 'all' === label ? 'Showing all posts' : `Showing ${ label }`;
 	const here = region.querySelector( '.page-numbers.current' );
 	if ( here ) {
 		const numbers = [ ...region.querySelectorAll( '.page-numbers' ) ]

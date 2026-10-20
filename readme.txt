@@ -14,6 +14,7 @@ The full description, tests, and deploy notes live in README.md.
 
 = 0.4.0 =
 * Archive views are configurable. The `tufte_formats_archive_views` filter maps more page URIs to views, and `tufte_formats_archive_view_formats` makes a view that lists only certain formats (for example, photos from image and gallery notes). Each view other than All gets its own `page-archive-{view}` template.
+* In-place navigation works on every archive view, including added ones: the views' paths reach the script from the server, and the screen reader announcement reads the current filter's label.
 
 = 0.3.1 =
 * A gallery note split into several smaller galleries now stays short in the archive stream too. The six-photo limit counts across all of a note's galleries, so later galleries wait for the note page while the text stays, and the "+N" sits on the last photo shown.
