@@ -119,3 +119,31 @@ tufte_formats_assert_same( true, (bool) preg_match( "/yield import\( '@wordpress
 tufte_formats_assert_same( true, str_contains( $tufte_formats_js, 'noteOpenTarget' ) && str_contains( $tufte_formats_js, "target.closest( 'a, button, input" ) && str_contains( $tufte_formats_js, 'getSelection()' ), 'archive.js: a note click skips links and active text selections' );
 tufte_formats_assert_same( true, str_contains( $tufte_formats_js, 'iframe, .wp-lightbox-container' ), 'archive.js: a note click on a lightbox image opens the lightbox, not the note' );
 tufte_formats_assert_same( true, str_contains( $tufte_formats_js, "card.classList.contains( 'format-standard' )" ), 'archive.js: essay cards keep their own stretched link' );
+
+// The router swaps in place on every archive view, including views a site adds through the filter.
+$tf_saved_views = $GLOBALS['wp_filter']['tufte_formats_archive_views'] ?? null;
+unset( $GLOBALS['wp_filter']['tufte_formats_archive_views'] );
+tufte_formats_assert_same( array( '/archive/', '/archive/essays/', '/archive/notes/' ), tufte_formats_archive_paths(), 'paths: the three default views' );
+$tf_add_photos = static fn( $v ) => $v + array( 'archive/photos' => 'photos' );
+add_filter( 'tufte_formats_archive_views', $tf_add_photos );
+tufte_formats_assert_same( array( '/archive/', '/archive/essays/', '/archive/notes/', '/archive/photos/' ), tufte_formats_archive_paths(), 'paths: a filtered view is included' );
+
+$tf_archive_page = get_page_by_path( 'archive' );
+$tf_page_id      = $tf_archive_page instanceof WP_Post ? $tf_archive_page->ID : wp_insert_post( array( 'post_title' => 'Archive', 'post_name' => 'archive', 'post_type' => 'page', 'post_status' => 'publish' ) );
+$GLOBALS['wp_query'] = new WP_Query( array( 'page_id' => $tf_page_id ) );
+$GLOBALS['wp_query']->get_posts();
+remove_filter( 'tufte_formats_archive_views', $tf_add_photos );
+if ( null !== $tf_saved_views ) {
+	$GLOBALS['wp_filter']['tufte_formats_archive_views'] = $tf_saved_views;
+}
+// Interactivity state merges within a request, so compare against the views as this site really has them.
+tufte_formats_enqueue_archive_module();
+tufte_formats_assert_same( tufte_formats_archive_paths(), wp_interactivity_state( 'tufte-formats/archive' )['paths'] ?? null, 'paths: handed to the script as interactivity state on an archive page' );
+if ( ! $tf_archive_page instanceof WP_Post ) {
+	wp_delete_post( $tf_page_id, true );
+}
+wp_reset_query();
+
+$tufte_formats_js = (string) file_get_contents( dirname( __DIR__ ) . '/assets/js/archive.js' );
+tufte_formats_assert_same( 0, preg_match( '/essays\|notes/', $tufte_formats_js ), 'archive.js: no hard-coded list of views' );
+tufte_formats_assert_same( true, str_contains( $tufte_formats_js, 'state.paths' ), 'archive.js: eligible links come from state.paths' );

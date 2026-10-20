@@ -163,19 +163,56 @@ add_action( 'pre_get_posts', 'tufte_formats_notes_exclude_main' );
 const TUFTE_FORMATS_ARCHIVE_STREAM_QUERY_ID = 21;
 
 /**
- * Which archive view the current page is: all, essays, notes, or none.
+ * Which archive view the current page is: all, essays, notes, a filtered view, or none.
  *
  * @param string $uri Page URI without leading or trailing slashes.
  * @return string
  */
 function tufte_formats_archive_view_for_uri( string $uri ): string {
+	return (string) ( tufte_formats_archive_views()[ $uri ] ?? '' );
+}
+
+/**
+ * Every archive view, by page URI.
+ *
+ * @return array<string,string> Page URI without slashes => view slug.
+ */
+function tufte_formats_archive_views(): array {
 	$views = array(
 		'archive'        => 'all',
 		'archive/essays' => 'essays',
 		'archive/notes'  => 'notes',
 	);
 
-	return $views[ $uri ] ?? '';
+	/**
+	 * Filters which page URIs are archive views.
+	 *
+	 * @param array<string,string> $views Page URI without slashes => view slug.
+	 */
+	return (array) apply_filters( 'tufte_formats_archive_views', $views );
+}
+
+/**
+ * The archive views' paths, as the router checks links against them.
+ *
+ * @return string[] Paths with leading and trailing slashes, such as /archive/notes/.
+ */
+function tufte_formats_archive_paths(): array {
+	return array_map( static fn( $uri ) => '/' . trim( (string) $uri, '/' ) . '/', array_keys( tufte_formats_archive_views() ) );
+}
+
+/**
+ * Views that list only certain post formats, such as photos.
+ *
+ * @return array<string,string[]> View slug => post format slugs (image, gallery, ...).
+ */
+function tufte_formats_archive_view_formats(): array {
+	/**
+	 * Filters the format-based archive views.
+	 *
+	 * @param array<string,string[]> $map View slug => post format slugs.
+	 */
+	return (array) apply_filters( 'tufte_formats_archive_view_formats', array() );
 }
 
 /**
@@ -197,7 +234,7 @@ function tufte_formats_archive_view(): string {
  * Shape a query for an archive view.
  *
  * @param array  $query Query vars.
- * @param string $view  all, essays, or notes.
+ * @param string $view  all, essays, notes, or a format view.
  * @return array
  */
 function tufte_formats_apply_archive_view( array $query, string $view ): array {
@@ -205,6 +242,17 @@ function tufte_formats_apply_archive_view( array $query, string $view ): array {
 		$query['tax_query'] = tufte_formats_notes_and( $query['tax_query'] ?? array(), tufte_formats_notes_clause( 'NOT IN' ) );
 	} elseif ( 'notes' === $view ) {
 		$query['tax_query'] = tufte_formats_notes_and( $query['tax_query'] ?? array(), tufte_formats_notes_clause( 'IN' ) );
+	} else {
+		$formats = tufte_formats_archive_view_formats()[ $view ] ?? array();
+		if ( $formats ) {
+			$clause = array(
+				'taxonomy' => 'post_format',
+				'field'    => 'slug',
+				'terms'    => array_map( static fn( $format ) => 'post-format-' . $format, array_values( (array) $formats ) ),
+				'operator' => 'IN',
+			);
+			$query['tax_query'] = tufte_formats_notes_and( $query['tax_query'] ?? array(), $clause );
+		}
 	}
 
 	return $query;
@@ -213,7 +261,7 @@ function tufte_formats_apply_archive_view( array $query, string $view ): array {
 /**
  * Query blocks leave notes out unless the page is an archive view or the block asks for a note format.
  *
- * On the three archive pages the view decides: All keeps everything, Essays drops
+ * On the archive pages the view decides: All keeps everything, Essays drops
  * notes, Notes keeps only notes. Elsewhere, a Post format filter set to any
  * non-standard format makes a notes list; otherwise notes are left out. Query
  * blocks that inherit the main query are handled by pre_get_posts.
@@ -248,9 +296,9 @@ function tufte_formats_notes_query_block( array $query, WP_Block $block ): array
 add_filter( 'query_loop_block_query_vars', 'tufte_formats_notes_query_block', 10, 2 );
 
 /**
- * Put the archive view's template first for the essays and notes pages.
+ * Put the archive view's template first for every archive page except All.
  *
- * The files are page-archive-essays and page-archive-notes rather than
+ * The files are page-archive-{view} (page-archive-essays, page-archive-notes) rather than
  * page-essays and page-notes, so an unrelated page with one of those slugs
  * keeps the normal page template. The All view is the page with the slug
  * archive, which page-archive already matches.
@@ -260,7 +308,7 @@ add_filter( 'query_loop_block_query_vars', 'tufte_formats_notes_query_block', 10
  * @return string[]
  */
 function tufte_formats_archive_page_templates( array $templates, string $view ): array {
-	if ( 'essays' === $view || 'notes' === $view ) {
+	if ( '' !== $view && 'all' !== $view ) {
 		array_unshift( $templates, 'page-archive-' . $view );
 	}
 

@@ -1,11 +1,11 @@
 <?php
 /**
- * In-place navigation for the three archive views.
+ * In-place navigation between the archive views.
  *
  * The filter row and the stream sit in a group with the tufte-archive-region
  * class. This file marks that group as an Interactivity API router region and
- * loads the script module that swaps it in place. The section header sits
- * outside the region, so it never re-renders. Links stay real links: without
+ * loads the script module that swaps it in place. Anything a theme puts inside
+ * the region (a per-view header, say) is swapped with it. Links stay real links: without
  * JavaScript, or on a modified click, the browser navigates as usual.
  *
  * @package Tufte_Formats
@@ -58,8 +58,9 @@ function tufte_formats_should_load_archive_module(): bool {
  * Register the archive script module, and enqueue it on the archive views only.
  *
  * The router loads on the first interaction (a dynamic import), not with the page.
- * The path pattern and the query-21 pagination parameter in assets/js/archive.js
- * mirror the archive views and TUFTE_FORMATS_ARCHIVE_STREAM_QUERY_ID in includes/notes.php.
+ * The views' paths reach the script as interactivity state; the query-21
+ * pagination parameter in assets/js/archive.js mirrors
+ * TUFTE_FORMATS_ARCHIVE_STREAM_QUERY_ID in includes/notes.php.
  *
  * @return void
  */
@@ -82,6 +83,7 @@ function tufte_formats_enqueue_archive_module(): void {
 	);
 
 	if ( tufte_formats_should_load_archive_module() ) {
+		wp_interactivity_state( 'tufte-formats/archive', array( 'paths' => tufte_formats_archive_paths() ) );
 		wp_enqueue_script_module( '@tufte-formats/archive' );
 	}
 }
