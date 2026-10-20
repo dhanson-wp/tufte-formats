@@ -65,3 +65,37 @@ if ( ! $archive_page instanceof WP_Post ) {
 	wp_delete_post( $page_id, true );
 }
 wp_reset_query();
+
+// Configurable views: other sites add URIs and format-based views through filters.
+tufte_formats_assert_same( '', tufte_formats_archive_view_for_uri( 'archive/photos' ), 'views: photos is not a view without the filter' );
+$tf_add_views = static fn( $v ) => $v + array( 'archive/photos' => 'photos' );
+add_filter( 'tufte_formats_archive_views', $tf_add_views );
+tufte_formats_assert_same( 'photos', tufte_formats_archive_view_for_uri( 'archive/photos' ), 'views: a filtered URI maps to its view' );
+tufte_formats_assert_same( 'notes', tufte_formats_archive_view_for_uri( 'archive/notes' ), 'views: defaults survive the filter' );
+remove_filter( 'tufte_formats_archive_views', $tf_add_views );
+
+tufte_formats_assert_same( array(), tufte_formats_archive_view_formats(), 'formats: no format views by default' );
+$tf_add_formats = static fn( $m ) => $m + array( 'photos' => array( 'image', 'gallery' ) );
+add_filter( 'tufte_formats_archive_view_formats', $tf_add_formats );
+$photos = tufte_formats_apply_archive_view( $base, 'photos' );
+$last   = end( $photos['tax_query'] );
+tufte_formats_assert_same( array( 'post_format', 'IN', array( 'post-format-image', 'post-format-gallery' ) ), array( $last['taxonomy'], $last['operator'], $last['terms'] ), 'apply: photos keeps image and gallery formats' );
+tufte_formats_assert_same( $base, tufte_formats_apply_archive_view( $base, 'unknown' ), 'apply: an unknown view leaves the query alone' );
+
+$fv_essay   = wp_insert_post( array( 'post_title' => 'fv-essay', 'post_status' => 'publish' ) );
+$fv_gallery = wp_insert_post( array( 'post_title' => 'fv-gallery', 'post_status' => 'publish' ) );
+$fv_image   = wp_insert_post( array( 'post_title' => 'fv-image', 'post_status' => 'publish' ) );
+$fv_status  = wp_insert_post( array( 'post_title' => 'fv-status', 'post_status' => 'publish' ) );
+set_post_format( $fv_gallery, 'gallery' );
+set_post_format( $fv_image, 'image' );
+set_post_format( $fv_status, 'status' );
+$fv_args = array( 'post__in' => array( $fv_essay, $fv_gallery, $fv_image, $fv_status ), 'orderby' => 'post__in', 'fields' => 'ids', 'posts_per_page' => -1 );
+tufte_formats_assert_same( array( $fv_gallery, $fv_image ), ( new WP_Query( tufte_formats_apply_archive_view( $fv_args, 'photos' ) ) )->posts, 'e2e: photos returns image and gallery notes only' );
+tufte_formats_assert_same( array( $fv_gallery, $fv_image, $fv_status ), ( new WP_Query( tufte_formats_apply_archive_view( $fv_args, 'notes' ) ) )->posts, 'e2e: notes still returns every note' );
+tufte_formats_assert_same( array( $fv_essay ), ( new WP_Query( tufte_formats_apply_archive_view( $fv_args, 'essays' ) ) )->posts, 'e2e: essays never returns a photo' );
+foreach ( array( $fv_essay, $fv_gallery, $fv_image, $fv_status ) as $fv_id ) {
+	wp_delete_post( $fv_id, true );
+}
+
+tufte_formats_assert_same( array( 'page-archive-photos', 'page' ), tufte_formats_archive_page_templates( array( 'page' ), 'photos' ), 'hierarchy: any non-all view prepends its template' );
+remove_filter( 'tufte_formats_archive_view_formats', $tf_add_formats );
