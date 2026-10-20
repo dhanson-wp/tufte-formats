@@ -1,0 +1,93 @@
+/*
+ * Gallery notes in a stream (includes/gallery-stream.php).
+ *
+ * An even grid of squares on six tracks: three across for six photos, and
+ * fewer photos reflow to fill the row. Selectors start at .wp-block-post so
+ * they outrank core's per-column widths, which use :not(#individual-image);
+ * core's count-based widths still need the one !important below.
+ */
+
+.wp-block-post .wp-block-gallery.has-nested-images.tufte-stream-gallery {
+	display: grid;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	/* Tight, like a photo grid, rather than the theme's wider gallery gap. */
+	gap: 0.25rem;
+}
+
+.wp-block-post .wp-block-gallery.has-nested-images.tufte-stream-gallery figure.wp-block-image:not(#individual-image) {
+	grid-column: span 2;
+	/* Core sizes one to three photos with :nth-last-child() widths that outrank any selector here. */
+	width: auto !important;
+	margin: 0;
+	aspect-ratio: 1;
+	overflow: hidden;
+}
+
+.wp-block-post .wp-block-gallery.has-nested-images.tufte-stream-gallery figure.wp-block-image:not(#individual-image) img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* The lightbox wrapper sits between the figure and the image when it's on. */
+.wp-block-post .tufte-stream-gallery figure.wp-block-image .wp-lightbox-container {
+	height: 100%;
+}
+
+/* One photo: full width at 3:2. */
+.wp-block-post .wp-block-gallery.has-nested-images.tufte-stream-gallery--1 figure.wp-block-image:not(#individual-image) {
+	grid-column: 1 / -1;
+	aspect-ratio: 3 / 2;
+}
+
+/* Two photos side by side, four as a 2 x 2. */
+.wp-block-post .wp-block-gallery.has-nested-images:is(.tufte-stream-gallery--2, .tufte-stream-gallery--4) figure.wp-block-image:not(#individual-image) {
+	grid-column: span 3;
+}
+
+/* Five photos: three on top, two wider below. */
+.wp-block-post .wp-block-gallery.has-nested-images.tufte-stream-gallery--5 figure.wp-block-image:nth-of-type(n + 4):not(#individual-image) {
+	grid-column: span 3;
+	aspect-ratio: 3 / 2;
+}
+
+/* Per-photo captions wait for the note page; the gallery's own caption stays. */
+.wp-block-post .tufte-stream-gallery figure.wp-block-image figcaption {
+	display: none;
+}
+
+.wp-block-post .tufte-stream-gallery > .blocks-gallery-caption {
+	grid-column: 1 / -1;
+}
+
+/* The "+N" square: a dark veil over the sixth photo, linking to the note. Scoped to outrank theme link colors. */
+.wp-block-post .tufte-stream-gallery figure a.tufte-stream-gallery__more {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgb(17 17 17 / 0.55);
+	color: #fffff8;
+	font-size: 1.75rem;
+	line-height: 1;
+	text-decoration: none;
+}
+
+.wp-block-post .tufte-stream-gallery__more span {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.3rem;
+}
+
+.wp-block-post .tufte-stream-gallery figure a.tufte-stream-gallery__more:hover,
+.wp-block-post .tufte-stream-gallery figure a.tufte-stream-gallery__more:focus-visible {
+	background: rgb(17 17 17 / 0.7);
+	color: #fffff8;
+}
+
+.wp-block-post .tufte-stream-gallery figure a.tufte-stream-gallery__more:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: -4px;
+}

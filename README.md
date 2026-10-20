@@ -14,6 +14,7 @@ It's a companion for the theme and it knows nothing about my site. Site-specific
 - **Note meta.** A reply count in the note's margin ("N replies", or "Reply" with none), fediverse handles and webmention sources under comments, and thread depth for notes.
 - **Link notes.** The first external link in a link-format note is marked as external, with a source name that links to the same address.
 - **Creating notes.** Untitled posts made through the REST API or code get a format from their first block, and Posts > New note starts a status note. A titled post stays an essay.
+- **Gallery notes in a stream.** Inside any query loop, a note's gallery shows at most six photos in an even grid of squares. With more, the sixth square carries a "+N" link to the note, where the full gallery shows as built; N counts every photo not fully seen, so 18 photos read "+13". Hidden photos are dropped before they render, so the stream never loads them, and the saved post isn't touched. One to five photos reflow to fill the row, and per-photo captions wait for the note page while the gallery's own caption stays. The grid ships its own small stylesheet, since the markup is the plugin's.
 - **In-place navigation.** A small ES module swaps the archive stream without a full page load, with the real URL kept.
 - **Parent compatibility.** Tufte Blocks 1.9.0 registers its own Status-only notes hooks; this plugin removes them so one model runs.
 

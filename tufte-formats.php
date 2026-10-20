@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Tufte Formats
- * Description: Post formats as notes for Tufte Blocks sites: the notes model, the Essays and Notes archive views, note reply counts and fediverse source lines, and in-place archive navigation.
+ * Description: Post formats as notes for Tufte Blocks sites: the notes model, the Essays and Notes archive views, note reply counts and fediverse source lines, six-photo gallery grids in the stream, and in-place archive navigation.
  * Version:     0.2.1
  * Author:      Derek Hanson
  * License:     GPL-2.0-or-later
@@ -26,3 +26,4 @@ require_once __DIR__ . '/includes/note-meta.php';
 require_once __DIR__ . '/includes/archive-interactivity.php';
 require_once __DIR__ . '/includes/link-notes.php';
 require_once __DIR__ . '/includes/format-editing.php';
+require_once __DIR__ . '/includes/gallery-stream.php';
