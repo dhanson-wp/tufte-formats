@@ -117,4 +117,5 @@ tufte_formats_assert_same( true, (bool) preg_match( "/yield import\( '@wordpress
 
 // FB-13: the body of a note opens the note, but not over links or a text selection.
 tufte_formats_assert_same( true, str_contains( $tufte_formats_js, 'noteOpenTarget' ) && str_contains( $tufte_formats_js, "target.closest( 'a, button, input" ) && str_contains( $tufte_formats_js, 'getSelection()' ), 'archive.js: a note click skips links and active text selections' );
+tufte_formats_assert_same( true, str_contains( $tufte_formats_js, 'iframe, .wp-lightbox-container' ), 'archive.js: a note click on a lightbox image opens the lightbox, not the note' );
 tufte_formats_assert_same( true, str_contains( $tufte_formats_js, "card.classList.contains( 'format-standard' )" ), 'archive.js: essay cards keep their own stretched link' );

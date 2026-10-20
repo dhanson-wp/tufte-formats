@@ -53,8 +53,8 @@ const eligibleLink = ( event, region, seen ) => {
 /**
  * The permalink of the note a click landed on, when the click should open it.
  *
- * A note is clickable anywhere except on its own links, buttons, form controls, and players (video, audio, and embeds), and
- * never while text is selected, so reading and copying still work.
+ * A note is clickable anywhere except on its own links, buttons, form controls, players (video, audio, and embeds), and
+ * lightbox images, and never while text is selected, so reading, copying, and enlarging a photo still work.
  *
  * @param {Event} event Click event.
  * @param {Element} region Router region root.
@@ -69,7 +69,7 @@ const noteOpenTarget = ( event, region ) => {
 	if ( ! card || ! region.contains( card ) || card.classList.contains( 'format-standard' ) ) {
 		return '';
 	}
-	if ( target.closest( 'a, button, input, select, textarea, summary, label, video, audio, iframe' ) ) {
+	if ( target.closest( 'a, button, input, select, textarea, summary, label, video, audio, iframe, .wp-lightbox-container' ) ) {
 		return '';
 	}
 	if ( window.getSelection()?.toString() ) {
