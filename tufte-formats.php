@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Tufte Formats
  * Description: Post formats as notes for Tufte Blocks sites: the notes model, the Essays and Notes archive views, note reply counts and fediverse source lines, six-photo gallery grids in the stream, and in-place archive navigation.
- * Version:     0.3.0
+ * Version:     0.3.1
  * Author:      Derek Hanson
  * License:     GPL-2.0-or-later
  * Text Domain: tufte-formats
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'TUFTE_FORMATS_VERSION', '0.3.0' );
+define( 'TUFTE_FORMATS_VERSION', '0.3.1' );
 define( 'TUFTE_FORMATS_PLUGIN_FILE', __FILE__ );
 
 require_once __DIR__ . '/includes/parent-compat.php';

@@ -1,6 +1,6 @@
 === Tufte Formats ===
 Tags: post formats, notes, block theme
-Stable tag: 0.3.0
+Stable tag: 0.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -11,6 +11,9 @@ Post formats as notes for Tufte Blocks sites.
 The full description, tests, and deploy notes live in README.md.
 
 == Changelog ==
+
+= 0.3.1 =
+* A gallery note split into several smaller galleries now stays short in the archive stream too. The six-photo limit counts across all of a note's galleries, so later galleries wait for the note page while the text stays, and the "+N" sits on the last photo shown.
 
 = 0.3.0 =
 * Gallery notes in the archive stream show at most six photos in an even grid. A bigger gallery's sixth square says "+N" and links to the note, where every photo shows. Smaller galleries fill the row, and per-photo captions wait for the note page.
