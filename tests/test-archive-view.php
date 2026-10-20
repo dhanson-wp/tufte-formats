@@ -67,6 +67,12 @@ if ( ! $archive_page instanceof WP_Post ) {
 wp_reset_query();
 
 // Configurable views: other sites add URIs and format-based views through filters.
+// Set aside callbacks the active theme may add (the blog's child theme adds photos and links), and restore them at the end.
+$tf_saved_filters = array();
+foreach ( array( 'tufte_formats_archive_views', 'tufte_formats_archive_view_formats' ) as $tf_hook ) {
+	$tf_saved_filters[ $tf_hook ] = $GLOBALS['wp_filter'][ $tf_hook ] ?? null;
+	unset( $GLOBALS['wp_filter'][ $tf_hook ] );
+}
 tufte_formats_assert_same( '', tufte_formats_archive_view_for_uri( 'archive/photos' ), 'views: photos is not a view without the filter' );
 $tf_add_views = static fn( $v ) => $v + array( 'archive/photos' => 'photos' );
 add_filter( 'tufte_formats_archive_views', $tf_add_views );
@@ -99,3 +105,8 @@ foreach ( array( $fv_essay, $fv_gallery, $fv_image, $fv_status ) as $fv_id ) {
 
 tufte_formats_assert_same( array( 'page-archive-photos', 'page' ), tufte_formats_archive_page_templates( array( 'page' ), 'photos' ), 'hierarchy: any non-all view prepends its template' );
 remove_filter( 'tufte_formats_archive_view_formats', $tf_add_formats );
+foreach ( $tf_saved_filters as $tf_hook => $tf_saved ) {
+	if ( null !== $tf_saved ) {
+		$GLOBALS['wp_filter'][ $tf_hook ] = $tf_saved;
+	}
+}
