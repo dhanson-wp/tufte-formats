@@ -43,6 +43,10 @@ function tufte_formats_detect_format( string $content ): string {
 			return $map[ $name ];
 		}
 
+		if ( tufte_formats_is_video_embed( $block ) ) {
+			return 'video';
+		}
+
 		if ( 'core/paragraph' === $name ) {
 			$html = trim( (string) ( $block['innerHTML'] ?? '' ) );
 			// A paragraph that is only a link (optionally in emphasis) is a link note.
@@ -55,6 +59,33 @@ function tufte_formats_detect_format( string $content ): string {
 	}
 
 	return '';
+}
+
+/**
+ * Whether a block is a video player: a VideoPress block, or an embed of a video service.
+ *
+ * Core marks video embeds with type "video" once it has fetched the oEmbed. A post saved
+ * through code may skip that fetch, so the known video providers count too.
+ *
+ * @param array $block Parsed block.
+ * @return bool
+ */
+function tufte_formats_is_video_embed( array $block ): bool {
+	$name = (string) ( $block['blockName'] ?? '' );
+	if ( 'videopress/video' === $name ) {
+		return true;
+	}
+
+	if ( 'core/embed' !== $name ) {
+		return false;
+	}
+
+	$attrs = (array) ( $block['attrs'] ?? array() );
+	if ( 'video' === ( $attrs['type'] ?? '' ) ) {
+		return true;
+	}
+
+	return in_array( (string) ( $attrs['providerNameSlug'] ?? '' ), array( 'youtube', 'vimeo', 'videopress', 'wordpress-tv', 'tiktok', 'dailymotion' ), true );
 }
 
 /**
