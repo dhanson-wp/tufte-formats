@@ -12,6 +12,10 @@ tufte_formats_assert_same( 'image', $tf_detect( '<!-- wp:image --><figure class=
 tufte_formats_assert_same( 'gallery', $tf_detect( '<!-- wp:gallery --><figure class="wp-block-gallery"></figure><!-- /wp:gallery -->' ), 'detect: a gallery first is a gallery note' );
 tufte_formats_assert_same( 'quote', $tf_detect( '<!-- wp:quote --><blockquote class="wp-block-quote"><p>Words.</p></blockquote><!-- /wp:quote -->' ), 'detect: a quote first is a quote note' );
 tufte_formats_assert_same( 'video', $tf_detect( '<!-- wp:video --><figure class="wp-block-video"><video src="https://example.org/a.mp4"></video></figure><!-- /wp:video -->' ), 'detect: a video first is a video note' );
+tufte_formats_assert_same( 'video', $tf_detect( '<!-- wp:embed {"url":"https://www.youtube.com/watch?v=abc","type":"video","providerNameSlug":"youtube"} --><figure class="wp-block-embed is-type-video"><div class="wp-block-embed__wrapper">https://www.youtube.com/watch?v=abc</div></figure><!-- /wp:embed -->' ), 'detect: a video embed first is a video note' );
+tufte_formats_assert_same( 'video', $tf_detect( '<!-- wp:embed {"url":"https://vimeo.com/1","providerNameSlug":"vimeo"} --><figure class="wp-block-embed"><div class="wp-block-embed__wrapper">https://vimeo.com/1</div></figure><!-- /wp:embed -->' ), 'detect: an embed from a video service is a video note before core fills in its type' );
+tufte_formats_assert_same( 'video', $tf_detect( '<!-- wp:videopress/video {"guid":"FF216zal"} /-->' ), 'detect: a VideoPress block first is a video note' );
+tufte_formats_assert_same( 'status', $tf_detect( '<!-- wp:embed {"url":"https://mastodon.social/@a/1","type":"rich","providerNameSlug":"mastodon"} --><figure class="wp-block-embed"><div class="wp-block-embed__wrapper">https://mastodon.social/@a/1</div></figure><!-- /wp:embed -->' ), 'detect: a non-video embed stays a status' );
 tufte_formats_assert_same( 'link', $tf_detect( '<!-- wp:paragraph --><p><em><a href="https://example.org/x">A title</a></em></p><!-- /wp:paragraph -->' ), 'detect: a paragraph that is just a link is a link note' );
 tufte_formats_assert_same( 'status', $tf_detect( '<!-- wp:paragraph --><p>Read <a href="https://example.org/x">this</a> today.</p><!-- /wp:paragraph -->' ), 'detect: a link inside a sentence is still a status' );
 tufte_formats_assert_same( '', $tf_detect( '' ), 'detect: empty content has no format' );
@@ -28,6 +32,10 @@ tufte_formats_assert_same( 'status', get_post_format( $a ), 'agent path: an unti
 
 $tf_ids[] = $b = $tf_make( array( 'post_title' => '', 'post_content' => '<!-- wp:image --><figure class="wp-block-image"><img src="https://example.org/a.jpg" alt=""/></figure><!-- /wp:image -->' ) );
 tufte_formats_assert_same( 'image', get_post_format( $b ), 'agent path: an untitled image post is an image note' );
+
+$tf_ids[] = $v = $tf_make( array( 'post_title' => '', 'post_content' => '<!-- wp:embed {"url":"https://www.youtube.com/watch?v=abc","type":"video","providerNameSlug":"youtube"} --><figure class="wp-block-embed is-type-video"><div class="wp-block-embed__wrapper">https://www.youtube.com/watch?v=abc</div></figure><!-- /wp:embed -->' ) );
+tufte_formats_assert_same( 'video', get_post_format( $v ), 'agent path: an untitled post that starts with a video embed is a video note' );
+tufte_formats_assert_same( true, tufte_formats_is_note( $v ), 'agent path: a video note is a note' );
 
 $tf_ids[] = $c = $tf_make( array( 'post_title' => 'An essay' ) );
 tufte_formats_assert_same( false, get_post_format( $c ), 'agent path: a titled post stays an essay' );
