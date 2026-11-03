@@ -1,6 +1,6 @@
 === Tufte Formats ===
 Tags: post formats, notes, block theme
-Stable tag: 0.4.0
+Stable tag: 0.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -11,6 +11,9 @@ Post formats as notes for Tufte Blocks sites.
 The full description, tests, and deploy notes live in README.md.
 
 == Changelog ==
+
+= 0.5.0 =
+* An untitled post that starts with a video embed (YouTube, Vimeo, VideoPress, and other video services) or a VideoPress block is now created as a video note, the same way a post that starts with a Video block already was.
 
 = 0.4.0 =
 * Archive views are configurable. The `tufte_formats_archive_views` filter maps more page URIs to views, and `tufte_formats_archive_view_formats` makes a view that lists only certain formats (for example, photos from image and gallery notes). Each view other than All gets its own `page-archive-{view}` template.
